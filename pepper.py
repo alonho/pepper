@@ -57,22 +57,35 @@ def GET_UNARY_SYMBOL(node):
 def GET_CMP_SYMBOL(node):
     return CMP_SYMBOLS[type(node)]
 
-class Formatter(object):
+class Pepper(object):
 
     TAB = ' ' * 4
     
     def __init__(self, verbose=False):
+        self._verbose = verbose
+        self._flush()
+
+    def _debug(self, node):
+        if self._verbose:
+            print node, vars(node)    
+
+    def _flush(self):
         self._depth = 0
         self._stack = []
         self._result = []
-        self._verbose = verbose
-
+            
     def tostring(self):
         return "".join(self._result)
         
     def _w(self, s):
         self._result.append(s)
-                
+
+    def convert(self, s):
+        self.handle(parse(s))
+        result = self.tostring()
+        self._flush()
+        return result
+        
     def nl(self):
         self._w('\n' + self.TAB * self._depth)
         
@@ -117,8 +130,7 @@ class Formatter(object):
             self._stack.pop()            
             
     def handle(self, node):
-        if self._verbose:
-            print node, vars(node)
+        self._debug(node)
         with self._stacked(node):
             return getattr(self, "handle_" + node.__class__.__name__)(node)
 
@@ -141,9 +153,6 @@ class Formatter(object):
         with self.indent():
             self.handle_list(nodes)
             
-    def parse(self, s):
-        self.handle(parse(s))
-        return self.tostring()
 
     ###
 
@@ -377,7 +386,6 @@ class Formatter(object):
             
     def handle_TryExcept(self, node):
         self._w("try:")
-
         self.indent_handle_list(node.body)
         self.nl()
         for handler in node.handlers:
@@ -511,200 +519,6 @@ class Formatter(object):
         self._w("raise ")
         self.handle_list_comma_sep((node.type, node.inst, node.tback))
         
-def convert(s):
-    return Formatter().parse(s)
-c = convert
-
-def unchanged(s):
-    if c(s) != s:
-        print "original:"
-        print s
-        print
-        print "new: "
-        print c(s)
-        assert False
-u = unchanged
-    
-def test_print():
-    u("print 1")
-    u("print >> f, 'a'")
-    u("print 'a',")
-
-def test_math():
-    assert c("1 + 3 + 2") == "(1 + 3) + 2"
-    assert c("1 + 3 * 2") == "1 + (3 * 2)"
-    assert c("(1 + 2) * 3") == "(1 + 2) * 3"
-    
-    for op in BIN_SYMBOLS.values():
-        u("1 {} 2".format(op))
-
-def test_if():
-    u("""
-if True:
-    pass
-elif False:
-    1
-else:
-    2""")
-
-def test_for():
-    u("""
-for i in l:
-    pass""")
-
-def test_while():
-    u("""
-while True:
-    pass""")
-
-def test_func():
-    u("""
-@dec
-def f(a, b=3, *c, **d):
-    pass""")
-
-def test_attribute():
-    u("a.b")
-    
-def test_class():
-    u("""
-@dec
-class a(p1, p2):
-    
-    def f():
-        pass""")
-
-def test_assign():
-    u("a = b = 1")
-
-def test_augassign():
-    u("a += 1")
-    
-def test_delete():
-    u("del a, b")
-
-def test_import():
-    u("import a")
-
-def test_import_from():
-    u("from x import y, z")
-
-def test_alias():
-    u("import a as b")
-
-def test_try():
-    u("""try:
-    a
-except Exception, e:
-    b
-else:
-    c""")
-
-    u("""try:
-    a
-except Exception:
-    b""")
-
-    u("""try:
-    a
-except:
-    b""")
-
-    u("""try:
-    a
-finally:
-    b""")
-    
-    u("""try:
-    a
-except E:
-    b
-finally:
-    c""")
-
-def test_list_comp():
-    u("[a for b in c for d in k if j]")
-    
-def test_gen_comp():
-    u("(a for b in c for d in k if j)")
-
-def test_set_comp():
-    u("{a for b in c for d in k if j}")
-
-def test_call():
-    u("f(a, b=0, *c, **d)")
-    
-def test_unpack():
-    u("f(*a)")
-
-def test_tuple():
-    u("(1, 2, 3)")
-
-def test_list():
-    u("[1, 2]")
-
-def test_set():
-    u("{1, 2}")
-
-def test_dict():
-    u("{a: 1, b: 2}")
-
-def test_bool():
-    u("(a and b and c) or d")
-
-def test_unary():
-    u("not a")
-    u("~a")
-
-def test_getitem():
-    u("a[b]")
-
-def test_slice():
-    u("a[:]")
-    u("a[1:]")
-    u("a[:1]")
-    u("a[::1]")
-    u("a[0:10:2]")
-
-def test_extslice():
-    u("l[1, 2:3, 4:5, 6]")
-    
-def test_compare():
-    u("a == b and b == c")
-
-def test_yield():
-    u("yield a")
-    
-def test_lambda():
-    u("lambda x, y=1, *a, **k: x * 2")
-
-def test_ellipsis():
-    u("Ellipsis")
-
-def test_dictcomp():
-    u("{a: b for (a, b) in d}")
-
-def test_repr():
-    u("`a`")
-
-def test_with():
-    u("""with a as b:
-    pass""")
-
-def test_global():
-    u("global x, y")
-
-def test_return():
-    u("return x")
-
-def test_break():
-    u("break")
-
-def test_continue():
-    u("continue")
-
-def test_raise():
-    u("raise x, y, z")
 
 if __name__ == '__main__':
     import sys
