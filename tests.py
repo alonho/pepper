@@ -27,8 +27,7 @@ def test_math():
         u("1 {} 2".format(op))
 
 def test_if():
-    u("""
-if True:
+    u("""if True:
     pass
 elif False:
     1
@@ -36,31 +35,29 @@ else:
     2""")
 
 def test_for():
-    u("""
-for i in l:
+    u("""for i in l:
     pass""")
 
 def test_while():
-    u("""
-while True:
+    u("""while True:
     pass""")
 
 def test_func():
-    u("""
-@dec
+    u("""@dec
 def f(a, b=3, *c, **d):
-    pass""")
+    pass
+""")
 
 def test_attribute():
     u("a.b")
     
 def test_class():
-    u("""
-@dec
+    u("""@dec
 class a(p1, p2):
-    
     def f():
-        pass""")
+        pass
+    
+""")
 
 def test_assign():
     u("a = b = 1")
@@ -135,7 +132,8 @@ def test_set():
     u("{1, 2}")
 
 def test_dict():
-    u("{a: 1, b: 2}")
+    u("""{a: 1,
+ b: 2}""")
 
 def test_bool():
     u("(a and b and c) or d")

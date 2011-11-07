@@ -1,19 +1,6 @@
 from ast import *
 from contextlib import contextmanager
 
-@contextmanager
-def null_context():
-    yield
-
-def skip_first(func):
-    notfirst = []
-    def new_func(*a, **k):
-        if notfirst:
-            return func(*a, **k)
-        else:
-            notfirst.append(True)
-    return new_func
-
 BIN_SYMBOLS = {Add: '+',
                Sub: '-',
                Mult: '*',
@@ -57,6 +44,19 @@ def GET_UNARY_SYMBOL(node):
 def GET_CMP_SYMBOL(node):
     return CMP_SYMBOLS[type(node)]
 
+@contextmanager
+def null_context():
+    yield
+
+def skip_first(func):
+    notfirst = []
+    def new_func(*a, **k):
+        if notfirst:
+            return func(*a, **k)
+        else:
+            notfirst.append(True)
+    return new_func
+
 class Pepper(object):
 
     TAB = ' ' * 4
@@ -86,8 +86,24 @@ class Pepper(object):
         self._flush()
         return result
         
-    def nl(self):
-        self._w('\n' + self.TAB * self._depth)
+    def nl(self, location=None):
+        s = '\n'
+        if location is None:
+            s += self.TAB * self._depth
+        else:
+            s += location * ' '
+        self._w(s)
+
+    def _get_location(self):
+        count = 0
+        for s in reversed(self._result):
+            index = s.find('\n')
+            if index == -1:
+                count += len(s)
+            else:
+                count += len(s) - index - 1
+                break
+        return count 
         
     @contextmanager
     def indent(self):
@@ -212,7 +228,6 @@ class Pepper(object):
                 self.handle(operand)
         
     def handle_If(self, node):
-        self.nl()
         self._w("if ")
         while True:
             self.handle(node.test)
@@ -243,7 +258,6 @@ class Pepper(object):
         self.handle(node.value)
         
     def handle_For(self, node):
-        self.nl()
         self._w("for ")
         self.handle(node.target)
         self._w(" in ")
@@ -252,7 +266,6 @@ class Pepper(object):
         self.indent_handle_list(node.body)
 
     def handle_While(self, node):
-        self.nl()
         self._w("while ")
         self.handle(node.test)
         self._w(":")
@@ -278,41 +291,54 @@ class Pepper(object):
                 self._w("{}{}".format(prefix, value))
             
     def handle_FunctionDef(self, node):
-        self.nl()
         self.handle_decorators(node)
         self._w("def {}(".format(node.name))
         self.handle(node.args)
         self._w("):")
         self.indent_handle_list(node.body)
+        self.nl()
 
     def handle_NoneType(self, node):
         self._w("None")
         
     def handle_ClassDef(self, node):
-        self.nl()
         self.handle_decorators(node)
         self._w("class {}(".format(node.name))
         self.handle_list_comma_sep(node.bases)
         self._w("):")
         self.indent_handle_list(node.body)
+        self.nl()
 
+    NUM_ARGS_FOR_NL = 5
+    
     def handle_Call(self, node):
         self.handle(node.func)
         self._w("(")
-        comma = skip_first(lambda: self._w(", "))
+        if len(node.args) + len(node.keywords) + bool(node.starargs is not None) + bool(node.kwargs is not None) < self.NUM_ARGS_FOR_NL:
+            comma = skip_first(lambda: self._w(", "))
+            def onarg():
+                comma()
+        else:
+            comma = skip_first(lambda: self._w(","))
+            location = self._get_location()
+            nl = skip_first(lambda: self.nl(location=location))
+            def onarg():
+                comma()
+                nl()
+        
         for arg in node.args:
-            comma()
+            onarg()
             self.handle(arg)
         for keyword in node.keywords:
-            comma()
+            onarg()
             self._w("{}=".format(keyword.arg))
             self.handle(keyword.value)
         if node.starargs is not None:
-            comma()
+            onarg()
             self._w("*")
             self.handle(node.starargs)
         if node.kwargs is not None:
-            comma()
+            onarg()
             self._w("**")
             self.handle(node.kwargs)
         self._w(")")
@@ -415,9 +441,12 @@ class Pepper(object):
 
     def handle_Dict(self, node):
         with self._enclosed("{", "}"):
-            comma = skip_first(lambda: self._w(", "))
+            location = self._get_location()
+            comma = skip_first(lambda: self._w(","))
+            nl = skip_first(lambda: self.nl(location=location))
             for key, value in zip(node.keys, node.values):
                 comma()
+                nl()
                 self.handle(key)
                 self._w(": ")
                 self.handle(value)
