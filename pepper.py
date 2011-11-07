@@ -153,16 +153,11 @@ class Pepper(object):
         with self.indent():
             self.handle_list(nodes)
             
-
-    ###
-
     def handle_decorators(self, node):
         for dec in node.decorator_list:
             self._w("@")
             self.handle(dec)
             self.nl()
-    
-    ###
 
     def handle_Name(self, node):
         self._w(node.id)
@@ -522,4 +517,4 @@ class Pepper(object):
 
 if __name__ == '__main__':
     import sys
-    print Formatter().parse(sys.stdin.read())
+    print Pepper().convert(sys.stdin.read())

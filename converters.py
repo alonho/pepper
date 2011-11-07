@@ -7,18 +7,17 @@ def seperate_to_words(s):
         result.append(match.groups()[0])
         ss.append(ss.pop().replace(match.groups()[0], ''))
         
-    # from FOOBar extract FOO
+    # from _FOOBar_doo extract FOO
     re.sub("_?([A-Z]+)[A-Z][a-z]", found, ss[0])
+    # from _FOOBar_doo extract FOO
     re.sub("_?([A-Z]+$)", found, ss[0])
+    # 
     re.sub("_?([A-Z][a-z]+)", found, ss[0])
+    # starts with foo
     re.sub("_?([^A-Z][a-z]+)", found, ss[0])
     return result
 
 def to_camel_case(s):
-    """
-    foo -> Foo
-    foo_bar -> FooBar
-    """
     return ''.join(map(str.capitalize, s.split('_')))
 
 def match_to_lower(match):
