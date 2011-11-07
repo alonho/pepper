@@ -114,12 +114,15 @@ class Pepper(object):
         if self._parent_same_as_child():
             return self._parens()
         return null_context()
-        
+
     @contextmanager
-    def _parens(self):
-        self._w("(")
+    def _enclosed(self, start, end):
+        self._w(start)
         yield
-        self._w(")")
+        self._w(end)
+        
+    def _parens(self):
+        return self._enclosed("(", ")")
             
     @contextmanager
     def _stacked(self, node):
@@ -174,9 +177,8 @@ class Pepper(object):
     def handle_Print(self, node):
         self._w("print ")
         if node.dest is not None:
-            self._w(">> ")
-            self.handle(node.dest)
-            self._w(", ")
+            with self._enclosed(">> ", ", "):
+                self.handle(node.dest)
         map(self.handle, node.values)
         if not node.nl:
             self._w(',')
@@ -335,10 +337,9 @@ class Pepper(object):
 
     def make_comprehension(start, end):
         def handler(self, node):
-            self._w(start)
-            self.handle(node.elt)
-            map(self.handle, node.generators)
-            self._w(end)
+            with self._enclosed(start, end):
+                self.handle(node.elt)
+                map(self.handle, node.generators)
         return handler
             
     handle_ListComp = make_comprehension("[", "]")
@@ -348,18 +349,16 @@ class Pepper(object):
     del make_comprehension
         
     def handle_comprehension(self, node):
-        self._w(" for ")
-        self.handle(node.target)
-        self._w(" in ")
+        with self._enclosed(" for ", " in "):
+            self.handle(node.target)
         self.handle(node.iter)
         for if_ in node.ifs:
             self._w(" if ")
             self.handle(if_)
 
     def handle_DictComp(self, node):
-        self._w("{")
-        self.handle(node.key)
-        self._w(": ")
+        with self._enclosed("{", ": "):
+            self.handle(node.key)
         self.handle(node.value)
         map(self.handle, node.generators)
         self._w("}")
@@ -399,17 +398,15 @@ class Pepper(object):
             self.indent_handle_list(node.orelse)
 
     def handle_Tuple(self, node):
-        self._w("(")
-        self.handle_list_comma_sep(node.elts)
-        if len(node.elts) == 1:
-            self._w(",")
-        self._w(")")
+        with self._parens():
+            self.handle_list_comma_sep(node.elts)
+            if len(node.elts) == 1:
+                self._w(",")
 
     def make_sequence(start, end):
         def handler(self, node):
-            self._w(start)
-            self.handle_list_comma_sep(node.elts)
-            self._w(end)
+            with self._enclosed(start, end):
+                self.handle_list_comma_sep(node.elts)
         return handler
 
     handle_List = make_sequence("[", "]")
@@ -417,14 +414,13 @@ class Pepper(object):
     del make_sequence
 
     def handle_Dict(self, node):
-        self._w("{")
-        comma = skip_first(lambda: self._w(", "))
-        for key, value in zip(node.keys, node.values):
-            comma()
-            self.handle(key)
-            self._w(": ")
-            self.handle(value)
-        self._w("}")
+        with self._enclosed("{", "}"):
+            comma = skip_first(lambda: self._w(", "))
+            for key, value in zip(node.keys, node.values):
+                comma()
+                self.handle(key)
+                self._w(": ")
+                self.handle(value)
         
     def handle_BoolOp(self, node):
         with self._parens_if_needed():
@@ -439,9 +435,8 @@ class Pepper(object):
             
     def handle_Subscript(self, node):
         self.handle(node.value)
-        self._w("[")
-        self.handle(node.slice)
-        self._w("]")
+        with self._enclosed("[", "]"):
+            self.handle(node.slice)
 
     def handle_Index(self, node):
         self.handle(node.value)
@@ -487,9 +482,8 @@ class Pepper(object):
         self._w("nonlocal {}".format(', '.join(node.names)))
         
     def handle_Repr(self, node):
-        self._w("`")
-        self.handle(node.value)
-        self._w("`")
+        with self._enclosed("`", "`"):
+            self.handle(node.value)
 
     def handle_With(self, node):
         self._w("with ")
