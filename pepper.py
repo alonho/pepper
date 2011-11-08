@@ -501,8 +501,10 @@ class Pepper(object):
             self.handle(node.msg)
     
     def handle_Lambda(self, node):
-        self._w('lambda ')
-        self.handle(node.args)
+        self._w('lambda')
+        if node.args:
+            self._w(' ')
+            self.handle(node.args)
         self._w(': ')
         self.handle(node.body)
     
