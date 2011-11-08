@@ -14,7 +14,7 @@ def assert_unchanged(s):
 u = assert_unchanged
     
 def test_print():
-    u("print 1")
+    u("print 1, 2")
     u("print >> f, 'a'")
     u("print 'a',")
 
@@ -54,6 +54,7 @@ def test_attribute():
 def test_class():
     u("""@dec
 class a(p1, p2):
+    
     def f():
         pass
     
