@@ -547,7 +547,7 @@ class Pepper(object):
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Pepper.py parses python code and re-generates it with proper whitespace and formatting, as agreed on the holy PEP8.')
     parser.add_argument('input', nargs='?', default='/dev/stdin', help='path to input file')
     parser.add_argument('output', nargs='?', default='/dev/stdout', help='path to output file')
     args = parser.parse_args()
