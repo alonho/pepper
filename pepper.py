@@ -161,7 +161,7 @@ class Pepper(object):
             self.handle(node)
     
     def handle_list_sep(self, nodes, sep):
-        write_sep = skip_first(lambda : self._w(sep))
+        write_sep = skip_first(lambda: self._w(sep))
         for node in nodes:
             write_sep()
             self.handle(node)
@@ -275,7 +275,7 @@ class Pepper(object):
             self.indent_handle_list(node.orelse)
     
     def handle_arguments(self, node):
-        comma = skip_first(lambda : self._w(', '))
+        comma = skip_first(lambda: self._w(', '))
         nondefaults = [None] * (len(node.args) - len(node.defaults))
         for (arg, default) in zip(node.args, nondefaults + node.defaults):
             comma()
@@ -315,15 +315,15 @@ class Pepper(object):
         self.handle(node.func)
         self._w('(')
         if ((len(node.args) + len(node.keywords)) + bool(node.starargs is not None)) + bool(node.kwargs is not None) < self.NUM_ARGS_FOR_NL:
-            comma = skip_first(lambda : self._w(', '))
+            comma = skip_first(lambda: self._w(', '))
             
             def onarg():
                 comma()
             
         else:
-            comma = skip_first(lambda : self._w(','))
+            comma = skip_first(lambda: self._w(','))
             location = self._get_location()
-            nl = skip_first(lambda : self.nl(location=location))
+            nl = skip_first(lambda: self.nl(location=location))
             
             def onarg():
                 comma()
@@ -447,8 +447,8 @@ class Pepper(object):
     def handle_Dict(self, node):
         with self._enclosed('{', '}'):
             location = self._get_location()
-            comma = skip_first(lambda : self._w(','))
-            nl = skip_first(lambda : self.nl(location=location))
+            comma = skip_first(lambda: self._w(','))
+            nl = skip_first(lambda: self.nl(location=location))
             for (key, value) in zip(node.keys, node.values):
                 comma()
                 nl()
@@ -502,9 +502,9 @@ class Pepper(object):
     
     def handle_Lambda(self, node):
         self._w('lambda')
-        if node.args:
+        if node.args.args or node.args.kwarg or node.args.vararg:
             self._w(' ')
-            self.handle(node.args)
+        self.handle(node.args)
         self._w(': ')
         self.handle(node.body)
     
