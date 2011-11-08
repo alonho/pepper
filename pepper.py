@@ -1,6 +1,5 @@
 from ast import *
 from contextlib import contextmanager
-
 BIN_SYMBOLS = {Add: '+',
                Sub: '-',
                Mult: '*',
@@ -546,19 +545,11 @@ class Pepper(object):
 
 if __name__ == '__main__':
     import argparse
-    
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('input',
-                        nargs='?',
-                        default='/dev/stdin',
-                        help='path to input file')
-    parser.add_argument('output',
-                        nargs='?',
-                        default='/dev/stdout',
-                        help='path to output file')
-    
+    parser.add_argument('input', nargs='?', default='/dev/stdin', help='path to input file')
+    parser.add_argument('output', nargs='?', default='/dev/stdout', help='path to output file')
     args = parser.parse_args()
-
     with file(args.input) as input_file:
-        with file(args.output, 'w') as output_file:
-            output_file.write(Pepper().convert(input_file.read()))
+        input_data = input_file.read()
+    with file(args.output, 'w') as output_file:
+        output_file.write(Pepper().convert(input_data))
