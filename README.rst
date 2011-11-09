@@ -12,18 +12,19 @@ Pepper DOES NOT comply to PEP8 in several issues i had no will to solve like max
 
 Usage
 =====
+
 ::
-  usage: pepper.py [-h] [input] [output]
+    usage: pepper.py [-h] [input] [output]
 
-  Pepper.py parses python code and re-generates it with proper whitespace and
-  formatting, as agreed on the holy PEP8.
+    Pepper.py parses python code and re-generates it with proper whitespace and
+    formatting, as agreed on the holy PEP8.
 
-  positional arguments:
-    input       path to input file (default: /dev/stdin)
-    output      path to output file (default: /dev/stdout)
+    positional arguments:
+      input       path to input file (default: /dev/stdin)
+      output      path to output file (default: /dev/stdout)
 
-  optional arguments:
-    -h, --help  show this help message and exit
+    optional arguments:
+      -h, --help  show this help message and exit
 
 
 Whats next?
