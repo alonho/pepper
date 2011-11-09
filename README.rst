@@ -14,6 +14,7 @@ Usage
 =====
 
 ::
+
     usage: pepper.py [-h] [input] [output]
 
     Pepper.py parses python code and re-generates it with proper whitespace and
@@ -25,7 +26,6 @@ Usage
 
     optional arguments:
       -h, --help  show this help message and exit
-
 
 Whats next?
 ===========
