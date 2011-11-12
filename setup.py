@@ -11,4 +11,5 @@ setup(name='pepper',
       author_email='alon@horev.net',
       py_modules=['pepper'],
       license='BSD',
+      url='https://github.com/alonho/pepper',
       entry_points={'console_scripts': ['pepper=pepper:main']})
