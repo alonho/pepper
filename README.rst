@@ -14,6 +14,13 @@ Pepper emits comments (not docstrings, only comments) due to lack of support fro
 
 **For example output look at pepper.py, it was self-generated.**
 
+Installation
+============
+
+::
+
+    pip install pepper
+
 Usage
 =====
 
