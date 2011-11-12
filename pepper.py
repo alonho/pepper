@@ -546,13 +546,20 @@ class Pepper(object):
         self.handle_list_comma_sep((node.type, node.inst, node.tback))
     
 
-if __name__ == '__main__':
+def main():
     import argparse
+    import sys
+    import os
     parser = argparse.ArgumentParser(description='Pepper.py parses python code and re-generates it with proper whitespace and formatting, as agreed on the holy PEP8.')
     parser.add_argument('input', nargs='?', default='/dev/stdin', help='path to input file (default: /dev/stdin)')
     parser.add_argument('output', nargs='?', default='/dev/stdout', help='path to output file (default: /dev/stdout)')
     args = parser.parse_args()
     with file(args.input) as input_file:
+        if os.isatty(input_file.fileno()):
+            print "waiting for input on stdin.. you probably forgot the input_path parameter or the terminal 'pipe into' command: <"
         input_data = input_file.read()
     with file(args.output, 'w') as output_file:
         output_file.write(Pepper().convert(input_data))
+
+if __name__ == '__main__':
+    main()
