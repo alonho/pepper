@@ -34,6 +34,9 @@ elif False:
 else:
     2""")
 
+def test_inline_if():
+    u("""1 if True else 2""")
+    
 def test_for():
     u("""for i in l:
     pass""")
