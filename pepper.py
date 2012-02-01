@@ -249,6 +249,13 @@ class Pepper(object):
                 self._w('else:')
                 self.indent_handle_list(orelse)
                 break
+
+    def handle_IfExp(self, node):
+        self.handle(node.body)
+        self._w(' if ')
+        self.handle(node.test)
+        self._w(' else ')
+        self.handle(node.orelse)
     
     def handle_Pass(self, node):
         self._w('pass')
@@ -490,8 +497,9 @@ class Pepper(object):
         self.handle_list_comma_sep(node.dims)
     
     def handle_Yield(self, node):
-        self._w('yield ')
+        self._w('yield')
         if node.value is not None:
+            self._w(' ')
             self.handle(node.value)
     
     def handle_Assert(self, node):
